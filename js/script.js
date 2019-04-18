@@ -2,90 +2,140 @@
 Treehouse Techdegree:
 FSJS project 2 - List Filter and Pagination
 ******************************************/   
-const mainDiv = document.getElementsByTagName('div')[0];
-const headerDiv = document.getElementsByTagName('div')[1];
-const objectList = document.querySelectorAll('li');
-const paginationDiv = document.createElement('div');
-//const searchBarDiv = document.createElement('div');
-const allLinks = document.getElementsByTagName('a');
-paginationDiv.className = 'pagination';
 
+
+// Main 2 functions to create and append HTML elements store in a const variable
+// Calling createAndAppend will call createElement() within its function
 const htmlObject = {
-   createElement: (elementTag, appendTo, property, value,) => {
+   createElement: (elementTag, property, value, appendTo) => {
       const element = document.createElement(elementTag);
       element[property] = value;
       return element;
    }, 
-   createAndAppend: (elementTag, appendTo, property, value) => {
-      const element = htmlObject.createElement(elementTag, appendTo, property, value);
+   createAndAppend: (elementTag, property, value, appendTo) => {
+      const element = htmlObject.createElement(elementTag, property, value,appendTo);
       appendTo.appendChild(element);
       return element;
    }
 };
 
+// Global variables to share
+const mainDiv = document.getElementsByTagName('div')[0];
+const li = mainDiv.children[1].children;
+const paginationDiv = htmlObject.createElement('div', 'className', 'pagination');
+const allLinks = document.getElementsByTagName('a');
+
+// Main function to generate page, search and error results
+// page , search, and error functions located in const functionObject as an object
 showPage = (startIndex) => {
-   console.log(startIndex);
-   console.log(isNaN(startIndex));
+   const h2 = mainDiv.getElementsByTagName('h2');
+
+   //object to store functions
    const functionObject = { 
+         //simple math logic to determine display
          startPagination: function (startIndex) {
+            h2[0].innerHTML = 'Students';
             let endIndex = startIndex + 9;
-            for(let i = 0; i < objectList.length; i ++) {
+            for(let i = 0; i < li.length; i ++) {
                if (i < startIndex || i > endIndex){
-                  objectList[i].style.display = 'none';
+                  li[i].style.display = 'none';
                } else {
-                  objectList[i].style.display = '';
+                  li[i].style.display = '';
                }
             }
          },
-         startKeyUp: function (startIndex) {
-            for(let i = 0; i< objectList.length; i++) {
-               if (objectList[i].children[0].children[1].innerHTML.indexOf(startIndex)) {
-                  objectList[i].style.display = 'none';
+         // Validates 'keyup' and 'submit' listener startIndex value.
+         // Tried working out a more concise way of writing the 'if' statement but failed to do so
+         // Would love any feedback on a more concise way
+         startList: function (startIndex) {
+            // returns original title back to Students if the errorPage() title is invoke
+            h2[0].innerHTML = 'Students';
+
+            // indexOf() returns a (-1) if not found, if -1 happens more than list.length
+            // errorPage() is invoke
+            let errorCounter = 0;
+
+            for(let i = 0; i< li.length; i++) {
+               if(li[i].children[0].children[1].innerHTML.indexOf(startIndex) === -1) {
+                  errorCounter += 1;
+                  if (errorCounter >= li.length) {
+                     return functionObject.errorPage();
+                  }
                }
-               else {
-                  objectList[i].style.display = '';
+               // displays list students to style to none if statement is true or -1
+               // else for the remainder who value is 0 or false, display set to ''
+               if (li[i].children[0].children[1].innerHTML.indexOf(startIndex)) {
+                  li[i].style.display = 'none';
+               } else {
+                  li[i].style.display = '';
+                  
                }
             }
-         }      
-      };
+         },
 
+         // Replace h2 content with new title and removes all students from display
+         errorPage: function () { 
+            h2[0].innerHTML = 'No such name present...';
+            for(let i = 0; i < li.length; i ++) {
+               li[i].style.display = 'none';
+            }
+         }      
+   };
+   // if any functions or eventListener would like to call on the errorPage(), 
+   // simply call showPage() with the arg value = 'error' 
+   if (startIndex === 'error') {
+      return functionObject.errorPage();
+   }
+   // Passes only if startIndex is a number value
    if (startIndex === 0 ||  !isNaN(startIndex)) {
-      functionObject.startPagination(startIndex);
+      return functionObject.startPagination(startIndex);
    } 
+   // Passes only if startIndex is a string value
    if (isNaN(startIndex)) {
-      functionObject.startKeyUp(startIndex);
+      return functionObject.startList(startIndex);
    }
 }
 
-
+// generate, append, and add functionality to the pagination buttons
+// (elementTag, property, value, appendTo)
+// Calling createAndAppend will call createElement() within its function
 appendPageLinks = () => {
+   // showPage(0) starts page on page link 1
+   // searchBar() creates search bar
    showPage(0);
-   let pageNum = Math.ceil(objectList.length / 10);
+   searchBar();
+   const pageNum = Math.ceil(li.length / 10);
    for (let i = 0; i < pageNum; i++){
-      createLinks(i);
+      const li = htmlObject.createAndAppend('li','className', 'none', paginationDiv);
+                  htmlObject.createAndAppend('a', 'href', '#', li).textContent = i+1;
+                  mainDiv.appendChild(paginationDiv);
    }
    allLinks[0].className = 'active';
-   searchBar();
 }
 
+// generates and appends the search bar
+// Params (elementTag, property, value, appendTo)
+// Calling createAndAppend will call createElement() within its function
 searchBar = () => {
-   const searchBarDiv = htmlObject.createAndAppend('form', headerDiv, 'type', 'submit')
+   const headerDiv = mainDiv.children[0];
+   const searchBarDiv = htmlObject.createAndAppend('form', 'type', 'submit',headerDiv,)
       searchBarDiv.className = 'student-search';
-      htmlObject.createAndAppend('input', searchBarDiv, 'placeholder', 'Enter Student Name...').type = 'text';
-      htmlObject.createAndAppend('button', searchBarDiv, 'textContent', 'Search');
+      htmlObject.createAndAppend('input', 'placeholder', 'Enter Student Name...', searchBarDiv).type = 'text';
+      htmlObject.createAndAppend('button', 'textContent', 'Search', searchBarDiv);
 }
 
-createLinks = (i) => {  
-   const li = htmlObject.createAndAppend('li', paginationDiv);
-     htmlObject.createAndAppend('a', li , 'href', '#').textContent = i+1;
-}
+// Loads page 1 on start up 
+// Placement is imperative, the function generates require HTML elements for event listeners
+appendPageLinks();
 
+// Handles any clicks from page links
 mainDiv.addEventListener('click', (e) => {
    const link = e.target;
    let startIndex;
    for (let i = 0; i < allLinks.length; i++){
       allLinks[i].className = 'inactive';
    }
+   // Simple math logic to determine start index value
    if(link.tagName === 'A') {
       startIndex = (link.textContent * 10) - 10;
       showPage(startIndex);
@@ -93,65 +143,35 @@ mainDiv.addEventListener('click', (e) => {
    }      
 });
 
-
-mainDiv.appendChild(paginationDiv);
-appendPageLinks();
-
+// Form variables for Event Listeners
 const form = document.getElementsByTagName('form')[0];
 const input = form.querySelector('input');
-const studentDetails = document.getElementsByClassName('student-details');
 
-form.addEventListener('keyup', (e) =>{
-   let name = input.value.toLowerCase();
-   showPage(name);
-});
-
-
+// Handles any submit event from the form element/search bar
 form.addEventListener('submit', (e) =>{
    e.preventDefault();
    const name = input.value;
    input.value = '';
+   // Prevents a number or empty string by returning errorPage() in showPage() 
+   if(parseInt(name) || name === '') {
+      return showPage('error');
+   }
    showPage(name);
 });
 
+// Handles any keyup event from the search bar input field
 
-
-// Study guide for this project - https://drive.google.com/file/d/1OD1diUsTMdpfMDv677TfL1xO2CEkykSz/view?usp=sharing
-
-
-/*** 
-   Add your global variables that store the DOM elements you will 
-   need to reference and/or manipulate. 
-   
-   But be mindful of which variables should be global and which 
-   should be locally scoped to one of the two main functions you're 
-   going to create. A good general rule of thumb is if the variable 
-   will only be used inside of a function, then it can be locally 
-   scoped to that function.
-***/
-
-
-
-
-/*** 
-   Create the `showPage` function to hide all of the items in the 
-   list except for the ten you want to show.
-
-   Pro Tips: 
-     - Keep in mind that with a list of 54 students, the last page 
-       will only display four.
-     - Remember that the first student has an index of 0.
-     - Remember that a function `parameter` goes in the parens when 
-       you initially define the function, and it acts as a variable 
-       or a placeholder to represent the actual function `argument` 
-       that will be passed into the parens later when you call or 
-       "invoke" the function 
-***/
-
-
-
-
-/*** 
-   Create the `appendPageLinks function` to generate, append, and add 
-   functionality to the pagination buttons.
-***/
+input.addEventListener('keyup', (e) =>{
+   const name = input.value;
+   // Allows submit eventListener to complete without interruption 
+   // keyCode 13 is the 'Enter/Return' key
+   if (e.keyCode === 13) {
+      return
+   }
+   //Prevents a Number from being enter in the search bar
+   if(parseInt(name)) {
+      return showPage('error');
+   }
+   showPage(name.toLowerCase());
+           
+});
