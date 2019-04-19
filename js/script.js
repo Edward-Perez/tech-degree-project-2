@@ -92,18 +92,15 @@ showPage = (list, page) => {
 
 // Creates num of links and adds e.listener with functionality 
 appendPageLinks = (list) => {
+   // removes any page links if any are present
    htmlObject.removeHTML('pagination');
-   if (typeof list == 'object') {
-       arrayLength = list.length;
-   }
-   // Calls error function if list is false with string argument 
-   if (!list) {
-      return htmlObject.errorPage('Sorry, it appears the student is not register.');
-   }
+   arrayLength = list.length;
    const pageNum = Math.ceil(arrayLength / numToShow);
 
    // Calls function to create & display page links from main htmlObject 
    htmlObject.pageLinks(pageNum);
+   // Calls function if programmer decides to change const numToShow value  
+   showPage(list, 1);
 
    // Adding e.listeners to each page link
    document.querySelector('a').className = 'active';
