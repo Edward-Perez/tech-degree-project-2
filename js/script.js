@@ -1,11 +1,10 @@
-/******************************************
-Treehouse Techdegree:
-FSJS project 2 - List Filter and Pagination
-******************************************/   
+// Global Variables
+const pageDiv = document.querySelector('.page');
+const header = document.querySelector('.page-header');
+const studentListArray = [...document.querySelectorAll('li')];
+const numToShow = 10;
 
-
-// Main 2 functions to create and append HTML elements store in a const variable
-// Calling createAndAppend will call createElement() within its function
+// Object holds all functions to create, append, and remove HTML elements
 const htmlObject = {
    createElement: (elementTag, property, value, appendTo) => {
       const element = document.createElement(elementTag);
@@ -16,162 +15,168 @@ const htmlObject = {
       const element = htmlObject.createElement(elementTag, property, value,appendTo);
       appendTo.appendChild(element);
       return element;
+   },
+   pageLinks: (pageNum) => {
+      const paginationDiv = htmlObject.createAndAppend('div', 'className', 'pagination', pageDiv);
+      const paginationUl = htmlObject.createAndAppend('ul', '','', paginationDiv);
+      for (let i = 0; i < pageNum; i++){
+         const li = htmlObject.createAndAppend('li','className', 'pagination', paginationUl);
+                     htmlObject.createAndAppend('a', 'href', '#', li).textContent = i+1;
+                     pageDiv.appendChild(paginationDiv);
    }
+   },
+   searchBar: () => {
+      const searchBarDiv = htmlObject.createAndAppend('form', 'type', 'submit',header,)
+         searchBarDiv.className = 'student-search';
+         htmlObject.createAndAppend('input', 'placeholder', 'Enter Student Name...', searchBarDiv).type = 'text';
+         htmlObject.createAndAppend('button', 'textContent', 'Search', searchBarDiv);
+   },
+   errorPage: (message) => {
+      htmlObject.removeHTML('pagination');
+      htmlObject.removeHTML('error');
+      const errorMessage = htmlObject.createAndAppend('h1', 'className', 'js-errorMessage', pageDiv);
+      errorMessage.textContent = message;
+      studentListArray.forEach( function (item){
+         item.style.display = 'none';
+      });
+   },
+   removeHTML: (content) => {
+      if (content == 'pagination') {
+         if (pageDiv.lastElementChild.className == 'pagination'){
+            pageDiv.removeChild(pageDiv.lastElementChild);   
+         }      
+      }
+      if (content == 'searchBar') {
+         if (pageDiv.lastElementChild.className == 'student-search') {
+            header.removeChild(header.lastElementChild);
+         }
+      }
+      if (content == 'error') {
+         if (pageDiv.lastElementChild.className == 'js-errorMessage') {
+            pageDiv.removeChild(pageDiv.lastElementChild);
+         }
+      } 
+   }       
 };
 
-// Global variables to share
-const mainDiv = document.getElementsByTagName('div')[0];
-const li = mainDiv.children[1].children;
-const paginationDiv = htmlObject.createElement('div', 'className', 'pagination');
-const allLinks = document.getElementsByTagName('a');
-
-// Main function to generate page, search and error results
-// page , search, and error functions located in const functionObject as an object
-showPage = (startIndex) => {
-   const h2 = mainDiv.getElementsByTagName('h2');
-
-   //object to store functions
-   const functionObject = { 
-         //simple math logic to determine display
-         startPagination: function (startIndex) {
-            h2[0].innerHTML = 'Students';
-            let endIndex = startIndex + 9;
-            for(let i = 0; i < li.length; i ++) {
-               if (i < startIndex || i > endIndex){
-                  li[i].style.display = 'none';
-               } else {
-                  li[i].style.display = '';
-               }
-            }
-         },
-         // Validates 'keyup' and 'submit' listener startIndex value.
-         // Tried working out a more concise way of writing the 'if' statement but failed to do so
-         // Would love any feedback on a more concise way
-         startList: function (startIndex) {
-            // returns original title back to Students if the errorPage() title is invoke
-            h2[0].innerHTML = 'Students';
-
-            // indexOf() returns a (-1) if not found, if -1 happens more than list.length
-            // errorPage() is invoke
-            let errorCounter = 0;
-
-            for(let i = 0; i< li.length; i++) {
-               if(li[i].children[0].children[1].innerHTML.indexOf(startIndex) === -1) {
-                  errorCounter += 1;
-                  if (errorCounter >= li.length) {
-                     return functionObject.errorPage();
-                  }
-               }
-               // displays list students to style to none if statement is true or -1
-               // else for the remainder who value is 0 or false, display set to ''
-               if (li[i].children[0].children[1].innerHTML.indexOf(startIndex)) {
-                  li[i].style.display = 'none';
-               } else {
-                  li[i].style.display = '';
-                  
-               }
-            }
-         },
-
-         // Replace h2 content with new title and removes all students from display
-         errorPage: function () { 
-            h2[0].innerHTML = 'No such name present...';
-            for(let i = 0; i < li.length; i ++) {
-               li[i].style.display = 'none';
-            }
-         }      
-   };
-   // if any functions or eventListener would like to call on the errorPage(), 
-   // simply call showPage() with the arg value = 'error' 
-   if (startIndex === 'error') {
-      return functionObject.errorPage();
-   }
-   // Passes only if startIndex is a number value
-   if (startIndex === 0 ||  !isNaN(startIndex)) {
-      return functionObject.startPagination(startIndex);
-   } 
-   // Passes only if startIndex is a string value
-   if (isNaN(startIndex)) {
-      return functionObject.startList(startIndex);
-   }
+// Function to call program
+callProgram = () => {
+   showPage(studentListArray, 1);
+   appendPageLinks(studentListArray);
 }
 
-// generate, append, and add functionality to the pagination buttons
-// (elementTag, property, value, appendTo)
-// Calling createAndAppend will call createElement() within its function
-appendPageLinks = () => {
-   // showPage(0) starts page on page link 1
-   // searchBar() creates search bar
-   showPage(0);
-   searchBar();
-   const pageNum = Math.ceil(li.length / 10);
-   for (let i = 0; i < pageNum; i++){
-      const li = htmlObject.createAndAppend('li','className', 'none', paginationDiv);
-                  htmlObject.createAndAppend('a', 'href', '#', li).textContent = i+1;
-                  mainDiv.appendChild(paginationDiv);
+// Calls function to create & display search bar if not already 
+// Displays the arg contents to the page  
+showPage = (list, page) => {
+   if (header.lastElementChild.className != 'student-search'){
+      searchBarCall();
    }
-   allLinks[0].className = 'active';
+   const startIndex = (page * numToShow) - numToShow;
+   const endIndex = (page * numToShow);
+   list.forEach( function (item, index) {
+      if (index < startIndex || index >= endIndex) {
+         item.style.display = 'none';
+      } else {
+         item.style.display = '';
+      }
+   });
 }
 
-// generates and appends the search bar
-// Params (elementTag, property, value, appendTo)
-// Calling createAndAppend will call createElement() within its function
-searchBar = () => {
-   const headerDiv = mainDiv.children[0];
-   const searchBarDiv = htmlObject.createAndAppend('form', 'type', 'submit',headerDiv,)
-      searchBarDiv.className = 'student-search';
-      htmlObject.createAndAppend('input', 'placeholder', 'Enter Student Name...', searchBarDiv).type = 'text';
-      htmlObject.createAndAppend('button', 'textContent', 'Search', searchBarDiv);
+// Calls function to create & display page links from htmlObject
+// Creates num of links and adds functionality according to arguments inc. e.listener
+// Calls error function if list is false
+appendPageLinks = (list) => {
+   htmlObject.removeHTML('pagination');
+   if (typeof list == 'object') {
+       arrayLength = list.length;
+   }
+   if (!list) {
+      return htmlObject.errorPage('Sorry, it appears the student is not register.');
+   }
+   const pageNum = Math.ceil(arrayLength / numToShow);
+   htmlObject.pageLinks(pageNum);
+
+   document.querySelector('a').className = 'active';
+   const pageLink = document.querySelectorAll('a');  
+   showPage(list, 1); 
+
+   pageLink.forEach( function (item) {
+      item.addEventListener('click', (e) => {
+         const clickEvent = e.target;
+         pageLink.forEach( function (item) {
+            item.className = 'inactive';
+         });
+         if (clickEvent.tagName === 'A') {
+            clickEvent.className = 'active';
+            let pageNum = clickEvent.textContent;
+            showPage(list, pageNum);
+         } 
+      });
+   });
 }
 
-// Loads page 1 on start up 
-// Placement is imperative, the function generates require HTML elements for event listeners
-appendPageLinks();
+// Handles all of e.listeners arguments from search bar
+// validates all inputs / return error message with text arg
+// Sends a newly created array with input style values set to display to appendPageLinks()
+searchInput = (input) => {
+   let errorCounter = 0;
+   let newListArray = [];
 
-// Handles any clicks from page links
-mainDiv.addEventListener('click', (e) => {
-   const link = e.target;
-   let startIndex;
-   for (let i = 0; i < allLinks.length; i++){
-      allLinks[i].className = 'inactive';
+   if(!isNaN(parseInt(input))) {
+      return htmlObject.errorPage('Please only letters...'); 
    }
-   // Simple math logic to determine start index value
-   if(link.tagName === 'A') {
-      startIndex = (link.textContent * 10) - 10;
-      showPage(startIndex);
-      link.className = 'active';
-   }      
-});
 
-// Form variables for Event Listeners
-const form = document.getElementsByTagName('form')[0];
-const input = form.querySelector('input');
+   htmlObject.removeHTML('error');
 
-// Handles any submit event from the form element/search bar
-form.addEventListener('submit', (e) =>{
-   e.preventDefault();
-   const name = input.value;
-   input.value = '';
-   // Prevents a number or empty string by returning errorPage() in showPage() 
-   if(parseInt(name) || name === '') {
-      return showPage('error');
-   }
-   showPage(name);
-});
+   studentListArray.forEach( function (item) {
 
-// Handles any keyup event from the search bar input field
+      // indexOf() returns -1 if input value not found
+      // Would love to learn a new shorter way of writing this if statement
+      if(item.children[0].children[1].innerHTML.indexOf(input) === -1) {
+         errorCounter += 1;
+         if (errorCounter >= studentListArray.length) {
+            return htmlObject.errorPage('Sorry, it appears the student is not register.');
+         } 
+      }
+      if (item.children[0].children[1].innerHTML.indexOf(input)) {
+         item.style.display = 'none';
+      } else {
+         newListArray.push(item);
+         item.style.display = ''; 
+         appendPageLinks(newListArray);
+      };
+   });
+}
 
-input.addEventListener('keyup', (e) =>{
-   const name = input.value;
-   // Allows submit eventListener to complete without interruption 
-   // keyCode 13 is the 'Enter/Return' key
-   if (e.keyCode === 13) {
-      return
-   }
-   //Prevents a Number from being enter in the search bar
-   if(parseInt(name)) {
-      return showPage('error');
-   }
-   showPage(name.toLowerCase());
-           
-});
+// e.listeners for search bar / Handles value and sends to searchInput for validation
+searchBarCall = () => {
+   htmlObject.searchBar();
+   const form = document.querySelector('form');
+   const input = document.querySelector('input');
+
+   form.addEventListener('submit', (e) =>{
+      e.preventDefault();
+      const nameSubmit = input.value;
+      input.value = '';
+      return searchInput(nameSubmit);
+   });
+
+   input.addEventListener('keyup', (e) =>{
+      const name = input.value;
+      // if the enter key is press this event will not interrupt
+      // Would love to know a different method as MDN Web Docs states its been depreciated 
+      if (e.keyCode === 13) {
+         return
+      }
+      if (name == '') {
+         htmlObject.removeHTML('error');
+         return callProgram();
+      }
+      const nameInput = name.toLowerCase();
+      searchInput(nameInput);
+   });
+}
+
+// Calls program to start
+callProgram();
+
