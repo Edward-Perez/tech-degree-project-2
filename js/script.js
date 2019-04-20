@@ -37,7 +37,7 @@ const htmlObject = {
    },
    // Creates a error message from the message param
    errorPage: (message) => {
-      // removes any page links or already present errors from repeating
+      // removes any page links or already present errors messages from repeating
       htmlObject.removeHTML('pagination');
       htmlObject.removeHTML('error');
       const errorMessage = htmlObject.createAndAppend('h1', 'className', 'js-errorMessage', pageDiv);
@@ -127,24 +127,26 @@ appendPageLinks = (list) => {
 searchInput = (input) => {
    let errorCounter = 0;
    let newListArray = [];
-
+   // If any numbers are type into search bar
    if(!isNaN(parseInt(input))) {
       return htmlObject.errorPage('Please only letters...'); 
    }
-   // removes any error messages if present
+   // Removes any error messages if present
    htmlObject.removeHTML('error');
 
    studentListArray.forEach( function (item) {
-      // indexOf() returns -1 if input value not found
-      // Would love to learn a new shorter way of writing this if statement
-      if(item.children[0].children[1].innerHTML.indexOf(input) === -1) {
+      // returns true if input value is Not in html string
+      //Would love to learn a new shorter way of writing this if statement
+      if(!item.children[0].children[1].innerHTML.includes(input)) {
+         // If total error exceeds length of array, invokes error message
          errorCounter += 1;
          if (errorCounter >= studentListArray.length) {
             // Call to errorPage() located in htmlObject above
             return htmlObject.errorPage('Sorry, it appears the student is not register.');
          } 
       }
-      if (item.children[0].children[1].innerHTML.indexOf(input)) {
+      if (!item.children[0].children[1].innerHTML.includes(input)) {
+         // hides all items which do not include values from input
          item.style.display = 'none';
       } else {
          newListArray.push(item);
