@@ -1,4 +1,5 @@
 # List Pagination and Filtering
+## Exceeds Expectations
 ### Project 2 from the Treehouse Full Stack Javascript TechDegree program. 
 **_Display's the knowledge of JavaScript Pagination technique, and Progressive Enhancement to improve the usability of a site._**
 
