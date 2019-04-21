@@ -167,13 +167,13 @@ searchBarCall = () => {
    // e.listeners for both submit and keyup events
    form.addEventListener('submit', (e) =>{
       e.preventDefault();
-      const nameSubmit = input.value;
+      const nameSubmit = (input.value).toLowerCase();
       input.value = '';
       return searchInput(nameSubmit);
    });
 
    input.addEventListener('keyup', (e) =>{
-      const name = input.value;
+      const name = (input.value).toLowerCase();
       // if the enter key is press this event will not interrupt the submit (e)
       // Would love to know a different method as MDN Web Docs states its been depreciated 
       if (e.keyCode === 13) {
@@ -184,8 +184,7 @@ searchBarCall = () => {
          htmlObject.removeHTML('error');
          return callProgram();
       }
-      const nameInput = name.toLowerCase();
-      searchInput(nameInput);
+      searchInput(name);
    });
 }
 
